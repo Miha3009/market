@@ -1,0 +1,22 @@
+version: '3.7'
+
+services:
+  backend:
+    image: orders:latest
+    restart: always
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: orders
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo:4.4.8-focal
+    restart: always
+    volumes:
+      - type: bind
+        source: ./data
+        target: /data/db

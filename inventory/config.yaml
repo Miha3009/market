@@ -1,0 +1,9 @@
+server:
+  port: 8081
+postgres:
+  host: "localhost"
+  port: 5432
+  name: "inventory"
+  user: "miha3009"
+  password: "pass"
+

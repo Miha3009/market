@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+option go_package = "github.com/miha3009/market/protocol";
+
+package market;
+
+service Invetrory {
+	rpc CheckAvaliable (AvailabilityRequest) returns (AvailabilityResponse) {}
+	rpc Reserve (ReserveRequest) returns (ReserveResponse) {}
+	rpc CancelReserve(ReserveRequest) returns (google.protobuf.Empty) {}
+}
+
+message AvailabilityRequest {
+	repeated int32 ids = 1;
+}
+
+message AvailabilityResponse {
+	repeated bool available = 1;
+}
+
+message ReserveRequestProduct {
+	int32 id = 1;
+	int32 count = 2;
+}
+
+message ReserveRequest {
+	repeated ReserveRequestProduct products = 1;
+}
+
+message ReserveResponse {
+	bool success = 1;
+}
+
