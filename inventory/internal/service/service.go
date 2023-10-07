@@ -1,47 +1,48 @@
 package service
 
 import (
-	"products/internal/model"
-	"products/internal/repository"
-	"products/pkg/handlers"
+	"context"
+	"database/sql"
+	"log"
+
+	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/miha3009/market/inventory/internal/model"
+	"github.com/miha3009/market/inventory/internal/repository"
+	pb "github.com/miha3009/market/protocol"
 )
 
-type ProductService interface {
-	SelectById(id int) (model.Product, error)
-	Select(offset, limit int) (model.SelectResponse, error)
-	Create(value model.Product) (model.CreateResponse, error)
-	Delete(id int) error
-	Update(value model.Product) error
+type InventoryService struct {
+	pb.UnimplementedInvetroryServer
+	Logger *log.Logger
+	DB     repository.InventoryRepository
 }
 
-type ProductServiceImpl struct {
-	repo repository.ProductRepository
-}
-
-func NewProductService(ctx handlers.Context) ProductService {
-	return &ProductServiceImpl{
-		repo: repository.NewProductRepository(ctx.DB),
+func NewInventoryService(logger *log.Logger, db *sql.DB) *InventoryService {
+	return &InventoryService{
+		Logger: logger,
+		DB:     repository.NewInventoryRepository(db),
 	}
 }
 
-func (s *ProductServiceImpl) SelectById(id int) (model.Product, error) {
-	return s.repo.SelectById(id)
+func (s *InventoryService) CheckAvaliable(c context.Context, r *pb.AvailabilityRequest) (*pb.AvailabilityResponse, error) {
+	res, err := s.DB.Avaliable(r.Ids)
+	return &pb.AvailabilityResponse{Available: res}, err
 }
 
-func (s *ProductServiceImpl) Select(offset, limit int) (model.SelectResponse, error) {
-	data, count, err := s.repo.Select(offset, limit)
-	return model.SelectResponse{Products: data, Count: count}, err
+func (s *InventoryService) ToReserveRequest(r []*pb.ReserveRequestProduct) []model.ReserveRequest {
+	res := make([]model.ReserveRequest, len(r))
+	for i := range r {
+		res[i].ProductId = int(r[i].GetId())
+		res[i].Count = int(r[i].GetCount())
+	}
+	return res
 }
 
-func (s *ProductServiceImpl) Create(value model.Product) (model.CreateResponse, error) {
-	id, err := s.repo.Create(value)
-	return model.CreateResponse{Id: id}, err
+func (s *InventoryService) Reserve(c context.Context, r *pb.ReserveRequest) (*pb.ReserveResponse, error) {
+	succ, err := s.DB.Reserve(s.ToReserveRequest(r.Products))
+	return &pb.ReserveResponse{Success: succ}, err
 }
 
-func (s *ProductServiceImpl) Delete(id int) error {
-	return s.repo.Delete(id)
-}
-
-func (s *ProductServiceImpl) Update(value model.Product) error {
-	return s.repo.Update(value)
+func (s *InventoryService) CancelReserve(c context.Context, r *pb.ReserveRequest) (*empty.Empty, error) {
+	return &empty.Empty{}, s.DB.CancelReserve(s.ToReserveRequest(r.Products))
 }

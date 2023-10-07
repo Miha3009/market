@@ -1,0 +1,11 @@
+emailServer:
+    from: "inbox@market.com"
+    user: "bb9a1757-4665-4a7e-83f1-81725cc71d79"
+    password: "39a89b4e-77e0-4002-8062-ec2f1b64f9c7"
+    host: "app.debugmail.io"
+    port: 25
+kafka:
+    host: "localhost"
+    port: 9092
+    topic: "NotificationTopic"
+    partition: 0

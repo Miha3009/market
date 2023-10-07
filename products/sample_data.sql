@@ -10,5 +10,5 @@ INSERT INTO products (name, description, price) VALUES
 ('Product 9', 'Product 9 description', 150),
 ('Product 10', 'Product 10 description', 550),
 ('Product 11', 'Product 11 description', 450),
-('Product 11', 'Product 12 description', 300),
+('Product 12', 'Product 12 description', 300),
 ('Product 13', 'Product 13 description', 250);

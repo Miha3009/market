@@ -8,4 +8,5 @@ type Product struct {
 
 type ReserveRequest struct {
 	ProductId int
+	Count     int
 }

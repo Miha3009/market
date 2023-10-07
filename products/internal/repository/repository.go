@@ -2,7 +2,8 @@ package repository
 
 import (
 	"database/sql"
-	"products/internal/model"
+
+	"github.com/miha3009/market/products/internal/model"
 )
 
 type ProductRepository interface {

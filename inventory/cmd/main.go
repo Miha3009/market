@@ -4,14 +4,14 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"net/http"
+	"net"
 	"os"
-	"products/internal/controller"
-	"products/pkg/config"
-	"products/pkg/handlers"
 
-	"github.com/go-chi/chi/v5"
 	_ "github.com/lib/pq"
+	"github.com/miha3009/market/inventory/internal/service"
+	"github.com/miha3009/market/inventory/pkg/config"
+	pb "github.com/miha3009/market/protocol"
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -29,21 +29,17 @@ func main() {
 	}
 	defer client.Close()
 
-	ctx := handlers.Context{
-		Logger: logger,
-		DB:     client,
-	}
-
-	router := chi.NewRouter()
-	controller.RoutePaths(router, ctx)
-
-	server := &http.Server{}
-	server.Addr = fmt.Sprintf(":%d", cfg.Server.Port)
-	server.Handler = router
-	logger.Println(fmt.Sprintf("Server listen %d port", cfg.Server.Port))
-
-	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.Server.Port))
+	if err != nil {
 		logger.Fatal(err)
 	}
+
+	s := grpc.NewServer()
+	pb.RegisterInvetroryServer(s, service.NewInventoryService(logger, client))
+	logger.Println(fmt.Sprintf("Server listen %d port", cfg.Server.Port))
+	if err := s.Serve(lis); err != nil {
+		logger.Fatal(err)
+	}
+
 	logger.Println("Shutting down")
 }

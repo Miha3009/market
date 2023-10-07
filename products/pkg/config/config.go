@@ -23,10 +23,16 @@ type InventoryConfig struct {
 	Host string `yaml:"host"`
 }
 
+type RedisConfig struct {
+	Port int    `yaml:"port"`
+	Host string `yaml:"host"`
+}
+
 type Config struct {
 	Server    ServerConfig    `yaml:"server"`
-	Database  PostgresConfig  `yaml:"postgres"`
+	Postgres  PostgresConfig  `yaml:"postgres"`
 	Inventory InventoryConfig `yaml:"inventory"`
+	Redis     RedisConfig     `yaml:"redis"`
 }
 
 func ReadConfig(path string) (*Config, error) {

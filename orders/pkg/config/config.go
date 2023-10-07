@@ -16,9 +16,22 @@ type MongoDBConfig struct {
 	Name string `yaml:"name"`
 }
 
+type InventoryConfig struct {
+	Port int    `yaml:"port"`
+	Host string `yaml:"host"`
+}
+
+type KafkaConfig struct {
+	Port  int    `yaml:"port"`
+	Host  string `yaml:"host"`
+	Topic string `yaml:"topic"`
+}
+
 type Config struct {
-	Server   ServerConfig  `yaml:"server"`
-	Database MongoDBConfig `mongo:""`
+	Server    ServerConfig    `yaml:"server"`
+	Database  MongoDBConfig   `yaml:"mongo"`
+	Inventory InventoryConfig `yaml:"inventory"`
+	Kafka     KafkaConfig     `yamk:"kafka"`
 }
 
 func ReadConfig(path string) (*Config, error) {

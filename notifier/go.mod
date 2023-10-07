@@ -1,6 +1,8 @@
-module github.com/miha3009/market
+module github.com/miha3009/market/notifier
 
 go 1.19
+
+require gopkg.in/yaml.v2 v2.4.0
 
 require (
 	github.com/klauspost/compress v1.15.9 // indirect

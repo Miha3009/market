@@ -3,17 +3,13 @@ package controller
 import (
 	"encoding/json"
 	"math"
-	"products/internal/model"
-	"products/internal/service"
-	"products/pkg/handlers"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/miha3009/market/products/internal/model"
+	"github.com/miha3009/market/products/internal/service"
+	"github.com/miha3009/market/products/pkg/handlers"
 )
-
-type Response struct {
-	X string `json:"x"`
-}
 
 func HandleGetProductById(ctx handlers.Context) (any, error) {
 	id, err := strconv.Atoi(chi.URLParam(ctx.R, "id"))
@@ -21,7 +17,11 @@ func HandleGetProductById(ctx handlers.Context) (any, error) {
 		return nil, err
 	}
 
-	return service.NewProductService(ctx).SelectById(id)
+	product, err := service.NewProductService(ctx).SelectById(id)
+	if err != nil {
+		return nil, err
+	}
+	return product, nil
 }
 
 func HandleGetProducts(ctx handlers.Context) (any, error) {
