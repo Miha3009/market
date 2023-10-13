@@ -1,0 +1,75 @@
+schema {
+    query: MarketQuery
+    mutation: MarketMutation
+}
+
+type Product {
+  id: Int!
+  name: String!
+  description: String!
+  price: Int!
+  avaliable: Boolean
+}
+
+type ProductRequest {
+  id: Int!
+  count: Int!
+}
+
+type Order {
+  id: ID!
+  userId: Int!
+  products: [ProductRequest!]!
+}
+
+input NewProductRequest {
+  id: Int!
+  count: Int!
+}
+
+input NewProduct {
+  name: String!
+  description: String!
+  price: Int!
+}
+
+input NewOrder {
+  userId: Int!
+  products: [NewProductRequest!]!
+}
+
+input UpdatedProduct {
+  id: Int!
+  name: String!
+  description: String!
+  price: Int!  
+}
+
+type ProductList {
+  products: [Product!]!
+  count: Int!
+}
+
+type CreateOrderResponse {
+  id: ID,
+  Succ: Boolean!
+}
+
+type EmptyResponse {
+  result: Boolean!
+}
+
+type MarketQuery {
+  getProduct(id: Int!): Product!
+  getProductsList(limit: Int!, offset: Int!): ProductList!
+  getOrder(id: ID!): Order!
+  getOrderByUser(userId: Int!): [Order!]!
+}
+
+type MarketMutation {
+  createProduct(input: NewProduct!): Product!
+  createOrder(input: NewOrder!): CreateOrderResponse!
+  updateProduct(input: UpdatedProduct!): Product!
+  deleteProduct(id: Int!): EmptyResponse!
+  deleteOrder(id: ID!): EmptyResponse!
+}

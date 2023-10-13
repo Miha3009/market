@@ -1,0 +1,7 @@
+port: 8083
+products:
+  host: "http://127.0.0.1"
+  port: 8080
+orders:
+  host: "http://127.0.0.1"
+  port: 8082

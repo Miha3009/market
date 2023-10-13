@@ -31,7 +31,10 @@ func (r *InventoryRepositoryImpl) Avaliable(ids []int32) ([]bool, error) {
 		strIds[i] = strconv.Itoa(int(ids[i]))
 	}
 	params := "{" + strings.Join(strIds, ",") + "}"
-	rows, err := r.db.Query("SELECT id FROM inventory WHERE id = ANY($1::int[]) AND count > reserved", params)
+	rows, err := r.db.Query("SELECT product_id FROM inventory WHERE product_id = ANY($1::int[]) AND count > reserved", params)
+	if err != nil {
+		return nil, err
+	}
 	defer rows.Close()
 
 	data := make(map[int32]bool)

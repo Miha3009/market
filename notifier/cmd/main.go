@@ -32,6 +32,7 @@ func main() {
 	for {
 		m, err := r.ReadMessage(context.Background())
 		if err != nil {
+			logger.Println(err)
 			break
 		}
 		emailService.SendMail(string(m.Key), "Market", string(m.Value))

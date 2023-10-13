@@ -50,15 +50,15 @@ func HandleCreateProduct(ctx handlers.Context) (any, error) {
 	return service.NewProductService(ctx).Create(request)
 }
 
-func HandleUpdateProduct(ctx handlers.Context) error {
+func HandleUpdateProduct(ctx handlers.Context) (any, error) {
 	var request model.Product
 	decoder := json.NewDecoder(ctx.R.Body)
 	err := decoder.Decode(&request)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return service.NewProductService(ctx).Update(request)
+	return request, service.NewProductService(ctx).Update(request)
 }
 
 func HandleDeleteProduct(ctx handlers.Context) error {
@@ -74,6 +74,6 @@ func RoutePaths(router chi.Router, ctx handlers.Context) {
 	router.MethodFunc("GET", "/api/product/{id}", handlers.MakeJsonHandler(HandleGetProductById, ctx))
 	router.MethodFunc("GET", "/api/product", handlers.MakeJsonHandler(HandleGetProducts, ctx))
 	router.MethodFunc("POST", "/api/product", handlers.MakeJsonHandler(HandleCreateProduct, ctx))
-	router.MethodFunc("PUT", "/api/product", handlers.MakeHandler(HandleUpdateProduct, ctx))
+	router.MethodFunc("PUT", "/api/product", handlers.MakeJsonHandler(HandleUpdateProduct, ctx))
 	router.MethodFunc("DELETE", "/api/product/{id}", handlers.MakeHandler(HandleDeleteProduct, ctx))
 }

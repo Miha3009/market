@@ -1,0 +1,83 @@
+query {
+  getProduct(id: 2) {
+    name
+    price
+  }
+}
+
+query {
+  getOrder(id: "651db40e7343f2a3b4200af3") {
+    userId
+    products {
+      id
+      count
+    }
+  }
+}
+
+query {
+  getProductsList(limit: 3, offset: 2) {
+    products {
+      name
+      price
+    }
+  }
+}
+
+query {
+  getOrderByUser(userId: 1) {
+    id
+    products {
+      id
+      count
+    }
+  }
+}
+
+mutation {
+  createProduct(input: {
+    name: "Yet Another Product",
+    description: "Yet Another Product Description",
+    price: 1000
+  }) {
+    id
+    name
+  }
+}
+
+mutation {
+  updateProduct(input: {
+    id: 17,
+    name: "Yet Another Product",
+    description: "Yet Another Product Description",
+    price: 600
+  }) {
+    id
+    price
+  }
+}
+
+mutation {
+  deleteProduct(id: 17) {
+    result
+  }
+}
+
+mutation {
+  createOrder(input: {
+    userId: 1,
+    products: [
+        {id: 2, count: 1},
+        {id: 3, count: 2}
+    ]
+  }) {
+    id
+    Succ
+  }
+}
+
+mutation {
+  deleteOrder(id: "6507108e6cc22f5960b3e2aa") {
+    result
+  }
+}

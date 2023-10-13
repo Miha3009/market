@@ -9,7 +9,7 @@ import (
 type ProductService interface {
 	SelectById(id int) (model.Product, error)
 	Select(offset, limit int) (model.SelectResponse, error)
-	Create(value model.Product) (model.CreateResponse, error)
+	Create(value model.Product) (model.Product, error)
 	Delete(id int) error
 	Update(value model.Product) error
 }
@@ -53,9 +53,10 @@ func (s *ProductServiceImpl) Select(offset, limit int) (model.SelectResponse, er
 	return model.SelectResponse{Products: data, Count: count}, err
 }
 
-func (s *ProductServiceImpl) Create(value model.Product) (model.CreateResponse, error) {
+func (s *ProductServiceImpl) Create(value model.Product) (model.Product, error) {
 	id, err := s.repo.Create(value)
-	return model.CreateResponse{Id: id}, err
+	value.Id = id
+	return value, err
 }
 
 func (s *ProductServiceImpl) Delete(id int) error {
