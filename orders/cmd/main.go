@@ -22,12 +22,12 @@ import (
 
 func main() {
 	logger := log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
-	cfg, err := config.ReadConfig("config.yaml")
+	cfg, err := config.ReadConfig(os.Getenv("CONFIG_PATH"))
 	if err != nil {
 		logger.Fatal(err)
 	}
 
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%d", cfg.Database.Host, cfg.Database.Port)))
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%s@%s:%d", cfg.Database.User, cfg.Database.Password, cfg.Database.Host, cfg.Database.Port)))
 	if err != nil {
 		logger.Fatal(err)
 	}

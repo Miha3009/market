@@ -1,0 +1,9 @@
+server:
+  port: 8080
+postgres:
+  host: "postgres-service.market.svc.cluster.local"
+  port: 5432
+  name: "inventory"
+  user: "admin"
+  password: "12345"
+

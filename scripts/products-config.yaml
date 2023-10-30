@@ -1,0 +1,14 @@
+server:
+  port: 8080
+postgres:
+  host: "postgres-service.market.svc.cluster.local"
+  port: 5432
+  name: "products"
+  user: "admin"
+  password: "12345"
+redis:
+  host: "redis-service.market.svc.cluster.local"
+  port: 6379
+inventory:
+  host: "inventory-service.market.svc.cluster.local"
+  port: 8080

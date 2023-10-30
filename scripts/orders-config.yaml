@@ -1,0 +1,15 @@
+server:
+  port: 8080
+mongo:
+  host: "mongo-service.market.svc.cluster.local"
+  port: 27017
+  name: "orders"
+  user: "adminuser"
+  password: "password123"
+inventory:
+  host: "inventory-service.market.svc.cluster.local"
+  port: 8080
+kafka:
+  host: "kafka-service.market.svc.cluster.local"
+  port: 9092
+  topic: "NotificationTopic"

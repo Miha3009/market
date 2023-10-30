@@ -1,0 +1,584 @@
+apiVersion: v1
+kind: Secret
+data:
+  password: cGFzc3dvcmQxMjM= # password123
+  username: YWRtaW51c2Vy     # adminuser
+metadata:
+  name: mongo-creds
+  namespace: market
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: market
+  labels:
+    app: postgres
+data:
+  POSTGRES_DB: postgres
+  POSTGRES_USER: admin
+  POSTGRES_PASSWORD: "12345"
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: postgres-pv
+  namespace: market
+  labels:
+    type: local
+    app: postgres
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/data"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mongo-pv
+  namespace: market
+  labels:
+    type: local
+    app: mongo
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/data/mongo"
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: redis-pv
+  namespace: market
+  labels:
+    type: local
+    app: redis
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/storage/data"
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: kafka-pv
+  namespace: market
+  labels:
+    type: local
+    app: kafka
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/data"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: postgres-pv-claim
+  namespace: market
+  labels:
+    app: postgres
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-pv-claim
+  namespace: market
+  labels:
+    app: mongo
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce 
+  resources:
+    requests:
+      storage: 100Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-pv-claim
+  namespace: market
+  labels:
+    app: redis
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce 
+  resources:
+    requests:
+      storage: 100Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: kafka-pv-claim
+  namespace: market
+  labels:
+    app: kafka
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce 
+  resources:
+    requests:
+      storage: 100Mi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka
+  namespace: market
+spec:
+  serviceName: kafka-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      containers:
+        - name: kafka
+          image: doughgle/kafka-kraft
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 9092
+            - containerPort: 9093
+          env:
+            - name: REPLICAS
+              value: '1'
+            - name: SERVICE
+              value: kafka-service
+            - name: NAMESPACE
+              value: market
+            - name: SHARE_DIR
+              value: /mnt/kafka
+            - name: CLUSTER_ID
+              value: oh-sxaDRTcyAr6pFRbXyzA
+            - name: DEFAULT_REPLICATION_FACTOR
+              value: '1'
+            - name: DEFAULT_MIN_INSYNC_REPLICAS
+              value: '1'
+          volumeMounts:
+            - name: data
+              mountPath: /mnt/kafka
+      volumes:
+      - name: "data"
+        persistentVolumeClaim:
+          claimName: "kafka-pv-claim"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-deployment
+  namespace: market
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: bitnami/postgresql:14.9.0
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - configMapRef:
+                name: postgres-config
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgredb
+            - mountPath: /products-init
+              name: products-init
+            - mountPath: /products-test-values
+              name: products-test-values
+            - mountPath: /inventory-init
+              name: inventory-init
+            - mountPath: /inventory-test-values
+              name: inventory-test-values
+          startupProbe:
+            exec:
+              command: ["/bin/sh", "-c", "psql postgres://admin:12345@localhost:5432/postgres -c \"CREATE DATABASE inventory\"; psql postgres://admin:12345@localhost:5432/postgres -c \"CREATE DATABASE products\"; psql postgres://admin:12345@localhost:5432/products -a -f /products-init/products-init.sql; psql postgres://admin:12345@localhost:5432/products -a -f /products-test-values/products-test-values.sql; psql postgres://admin:12345@localhost:5432/inventory -a -f /inventory-init/inventory-init.sql; psql postgres://admin:12345@localhost:5432/inventory -a -f /inventory-test-values/inventory-test-values.sql"]
+            initialDelaySeconds: 10
+            timeoutSeconds: 10
+      volumes:
+        - name: postgredb
+          persistentVolumeClaim:
+            claimName: postgres-pv-claim
+        - name: products-init
+          configMap:
+            name: products-init
+        - name: products-test-values
+          configMap:
+            name: products-test-values
+        - name: inventory-init
+          configMap:
+            name: inventory-init
+        - name: inventory-test-values
+          configMap:
+            name: inventory-test-values
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-deployment
+  namespace: market
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers:
+      - name: mongo
+        image: mongo:4.4.8
+        imagePullPolicy: "IfNotPresent"
+        args: ["--dbpath","/data/db"]
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mongo-creds
+              key: username
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongo-creds
+              key: password
+        volumeMounts:
+        - name: "mongo-data-dir"
+          mountPath: "/data/db"
+      volumes:
+      - name: "mongo-data-dir"
+        persistentVolumeClaim:
+          claimName: "mongo-pv-claim"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+  namespace: market
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:7.2.2
+        imagePullPolicy: "IfNotPresent"
+        command: ["redis-server"]
+        ports:
+        - containerPort: 6379
+          name: redis
+        volumeMounts:
+        - name: redis-data-dir
+          mountPath: /data
+      volumes:
+      - name: "redis-data-dir"
+        persistentVolumeClaim:
+          claimName: "redis-pv-claim"          
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: graphql-deployment
+  namespace: market
+spec:
+  selector:
+    matchLabels:
+      app: graphql
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: graphql
+    spec:
+      containers:
+      - name: graphql
+        image: miha3009/graphql:latest
+        imagePullPolicy: "IfNotPresent"
+        env:
+          - name: CONFIG_PATH
+            value: "/etc/config/graphql-config.yaml"
+        ports:
+          - containerPort: 8080
+        volumeMounts:
+          - name: graphql-config
+            mountPath: /etc/config
+      volumes:
+      - name: graphql-config
+        configMap:
+          name: graphql-config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: products-deployment
+  namespace: market
+spec:
+  selector:
+    matchLabels:
+      app: products
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: products
+    spec:
+      containers:
+      - name: products
+        image: miha3009/products:latest
+        imagePullPolicy: "IfNotPresent"
+        env:
+          - name: CONFIG_PATH
+            value: "/etc/config/products-config.yaml"
+        ports:
+          - containerPort: 8080
+        volumeMounts:
+          - name: products-config
+            mountPath: /etc/config
+      volumes:
+      - name: products-config
+        configMap:
+          name: products-config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders-deployment
+  namespace: market
+spec:
+  selector:
+    matchLabels:
+      app: orders
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: orders
+    spec:
+      containers:
+      - name: orders
+        image: miha3009/orders:latest
+        imagePullPolicy: "IfNotPresent"
+        env:
+          - name: CONFIG_PATH
+            value: "/etc/config/orders-config.yaml"
+        ports:
+          - containerPort: 8080
+        volumeMounts:
+          - name: orders-config
+            mountPath: /etc/config
+      volumes:
+      - name: orders-config
+        configMap:
+          name: orders-config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-deployment
+  namespace: market
+spec:
+  selector:
+    matchLabels:
+      app: inventory
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: inventory
+    spec:
+      containers:
+      - name: inventory
+        image: miha3009/inventory:latest
+        imagePullPolicy: "IfNotPresent"
+        env:
+          - name: CONFIG_PATH
+            value: "/etc/config/inventory-config.yaml"
+        ports:
+          - containerPort: 8080
+        volumeMounts:
+          - name: inventory-config
+            mountPath: /etc/config
+      volumes:
+      - name: inventory-config
+        configMap:
+          name: inventory-config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notifier-deployment
+  namespace: market
+spec:
+  selector:
+    matchLabels:
+      app: notifier
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: notifier
+    spec:
+      containers:
+      - name: notifier
+        image: miha3009/notifier:latest
+        imagePullPolicy: "IfNotPresent"
+        env:
+          - name: CONFIG_PATH
+            value: "/etc/config/notifier-config.yaml"
+        volumeMounts:
+          - name: notifier-config
+            mountPath: /etc/config
+      volumes:
+      - name: notifier-config
+        configMap:
+          name: notifier-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: market
+spec:
+  selector:
+    app: postgres
+  ports:
+  - protocol: TCP
+    port: 5432
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-service
+  namespace: market
+spec:
+  selector:
+    app: mongo
+  ports:
+  - protocol: TCP
+    port: 27017
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+  namespace: market
+spec:
+  selector:
+    app: redis
+  ports:
+  - protocol: TCP
+    port: 6379
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-service
+  namespace: market
+spec:
+  selector:
+    app: kafka
+  ports:
+  - protocol: TCP
+    port: 9092
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: products-service
+  namespace: market
+spec:
+  selector:
+    app: products
+  ports:
+  - protocol: TCP
+    port: 8080
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orders-service
+  namespace: market
+spec:
+  selector:
+    app: orders
+  ports:
+  - protocol: TCP
+    port: 8080
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-service
+  namespace: market
+spec:
+  selector:
+    app: inventory
+  ports:
+  - protocol: TCP
+    port: 8080
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: graphql-service
+  namespace: market
+spec:
+  selector:
+    app: graphql
+  ports:
+  - protocol: TCP
+    port: 8080
+    nodePort: 32321
+  type: NodePort

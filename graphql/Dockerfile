@@ -5,10 +5,10 @@ WORKDIR /usr/src/app
 COPY . ./
 RUN go mod download
 
-WORKDIR /usr/src/app/cmd
-RUN go build -o /usr/local/bin/orders -buildvcs=false
+WORKDIR /usr/src/app
+RUN go build -o /usr/local/bin/graphql -buildvcs=false
 
 FROM alpine:latest
-COPY --from=builder /usr/local/bin/orders ./
-CMD ["./orders"]
+COPY --from=builder /usr/local/bin/graphql ./
+CMD ["./graphql"]
 EXPOSE 8080

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -12,7 +13,7 @@ import (
 )
 
 func main() {
-	cfg, err := graph.ReadConfig("config.yaml")
+	cfg, err := graph.ReadConfig(os.Getenv("CONFIG_PATH"))
 	if err != nil {
 		log.Fatal(err)
 	}

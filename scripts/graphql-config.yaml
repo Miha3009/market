@@ -1,0 +1,7 @@
+port: 8080
+products:
+  host: "http://products-service.market.svc.cluster.local"
+  port: 8080
+orders:
+  host: "http://orders-service.market.svc.cluster.local"
+  port: 8080

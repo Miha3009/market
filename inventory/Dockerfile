@@ -6,10 +6,9 @@ COPY . ./
 RUN go mod download
 
 WORKDIR /usr/src/app/cmd
-RUN go build -o /usr/local/bin/orders -buildvcs=false
+RUN go build -o /usr/local/bin/inventory -buildvcs=false
 
 FROM alpine:latest
-COPY --from=builder /usr/local/bin/orders ./
-COPY --from=builder /usr/src/app/config.yaml ./config.yaml
-CMD ["./orders"]
+COPY --from=builder /usr/local/bin/inventory ./
+CMD ["./inventory"]
 EXPOSE 8080

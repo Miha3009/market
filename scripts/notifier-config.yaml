@@ -5,7 +5,7 @@ emailServer:
     host: "app.debugmail.io"
     port: 25
 kafka:
-    host: "localhost"
+    host: "kafka-service.market.svc.cluster.local"
     port: 9092
     topic: "NotificationTopic"
     partition: 0

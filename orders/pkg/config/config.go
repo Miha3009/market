@@ -11,9 +11,11 @@ type ServerConfig struct {
 }
 
 type MongoDBConfig struct {
-	Port int    `yaml:"port"`
-	Host string `yaml:"host"`
-	Name string `yaml:"name"`
+	Port     int    `yaml:"port"`
+	Host     string `yaml:"host"`
+	Name     string `yaml:"name"`
+	User     string `yaml:"user"`
+	Password string `yaml:"password"`
 }
 
 type InventoryConfig struct {

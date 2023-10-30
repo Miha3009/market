@@ -6,9 +6,8 @@ COPY . ./
 RUN go mod download
 
 WORKDIR /usr/src/app/cmd
-RUN go build -o /usr/local/bin/products -buildvcs=false
+RUN go build -o /usr/local/bin/notifier -buildvcs=false
 
 FROM alpine:latest
-COPY --from=builder /usr/local/bin/products ./
-CMD ["./products"]
-EXPOSE 8080
+COPY --from=builder /usr/local/bin/notifier ./
+CMD ["./notifier"]

@@ -14,7 +14,7 @@ import (
 
 func main() {
 	logger := log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
-	cfg, err := config.ReadConfig("config.yaml")
+	cfg, err := config.ReadConfig(os.Getenv("CONFIG_PATH"))
 	if err != nil {
 		logger.Fatal(err)
 	}
