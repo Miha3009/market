@@ -40,7 +40,7 @@ func (r *OrderRepositoryImpl) SelectById(id string) (model.Order, error) {
 }
 
 func (r *OrderRepositoryImpl) SelectByUser(userId int) ([]model.Order, error) {
-	cur, err := r.db.Collection("orders").Find(context.TODO(), bson.M{"userid": userId})
+	cur, err := r.db.Collection("orders").Find(context.TODO(), bson.M{"userId": userId})
 	if err != nil {
 		return nil, err
 	}
