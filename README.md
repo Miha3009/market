@@ -1,15 +1,21 @@
 # Онлайн магазин
 ## Запуск
-Для запуска необходим кластер kubernetes с ingress. Для тестирования локально можно использовать minikube:
-minikube start
-minikube addons enable ingress
+Для запуска необходим кластер kubernetes с ingress.
 
 В папке scripts лежат полезные скрипты:
-deploy.sh - создает все необходимые для запуска системы ресурсы kubernetes (внутри namespace market)
-undeploy.sh - удаляет все ресурсы
-restart.sh - удаляет все ресурсы и создает заново
+- deploy.sh - создает все необходимые для запуска системы ресурсы kubernetes (внутри namespace market)
+- undeploy.sh - удаляет все ресурсы
+- restart.sh - удаляет все ресурсы и создает заново
 
 Все сервисы используют переменную среды CONFIG\_PATH, в которой прописывается путь до файла с конфигурацией.
+
+Для тестирования локально можно использовать minikube:
+
+> minikube start && minikube addons enable ingress
+
+В этом случае получить доступ к GraphQL можно с помощью команды:
+
+> minikube service graphql-service -n market
 
 ## Сервисы
 - Продукты
